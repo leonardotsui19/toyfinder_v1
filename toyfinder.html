@@ -161,7 +161,7 @@
     </div>
 
     <!-- Header Overlay -->
-    <header class="fixed top-0 left-0 right-0 bg-primary bg-opacity-95 backdrop-blur-sm text-white shadow-lg z-40">
+    <header class="fixed top-0 left-0 right-0 bg-primary bg-opacity-95 backdrop-blur-sm text-white shadow-lg z-50">
         <div class="px-3 sm:px-4 py-2 sm:py-3">
             <div class="flex items-center justify-between">
                 <h1 class="text-lg sm:text-xl font-bold flex items-center">
@@ -252,10 +252,10 @@
     </div>
 
     <!-- Store List Panel Overlay -->
-    <div id="storeListOverlay" class="fixed inset-0 bg-black bg-opacity-25 z-30 hidden transition-opacity duration-300"></div>
+    <div id="storeListOverlay" class="fixed inset-0 bg-black bg-opacity-25 z-40 hidden transition-opacity duration-300"></div>
     
     <!-- Store List Panel -->
-    <div id="storeListPanel" class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 rounded-t-2xl shadow-2xl z-30 transform translate-y-full transition-transform duration-300">
+    <div id="storeListPanel" class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 rounded-t-2xl shadow-2xl z-40 transform translate-y-full transition-transform duration-300">
         <div class="p-4">
             <!-- Panel Handle (Draggable) -->
             <div id="panelHandle" class="w-12 h-1 bg-gray-300 dark:bg-gray-600 rounded-full mx-auto mb-4 cursor-pointer"></div>
@@ -438,7 +438,6 @@
         ];
 
         // DOM elements
-        const storeList = document.getElementById('storeList');
         const collectionFeed = document.getElementById('collectionFeed');
         const createPostBtn = document.getElementById('createPostBtn');
         const createPostModal = document.getElementById('createPostModal');
@@ -574,6 +573,11 @@
 
         function renderNearbyStores() {
             const nearbyContent = document.getElementById('nearbyTabContent');
+            if (!nearbyContent) {
+                console.error('nearbyTabContent element not found');
+                return;
+            }
+            
             nearbyContent.innerHTML = toyStores.map(store => {
                 const isRecommended = recommendedStores.includes(store.id);
                 const isTopMatch = topMatchStore === store.id;
@@ -620,6 +624,11 @@
             const aiRecommendationsList = document.getElementById('aiRecommendationsList');
             const aiRecommendationsEmpty = document.getElementById('aiRecommendationsEmpty');
             const aiTabBadge = document.getElementById('aiTabBadge');
+            
+            if (!aiRecommendationsList || !aiRecommendationsEmpty || !aiTabBadge) {
+                console.error('AI recommendations elements not found');
+                return;
+            }
             
             // Check if we have AI recommendations
             if (recommendedStores.length === 0 && !topMatchStore) {
@@ -697,6 +706,11 @@
 
         // Populate collection feed
         function renderCollectionFeed() {
+            if (!collectionFeed) {
+                console.error('collectionFeed element not found');
+                return;
+            }
+            
             collectionFeed.innerHTML = samplePosts.map(post => `
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
                     <!-- Post Header -->
@@ -928,20 +942,49 @@
 
         // Collections Panel
         document.getElementById('collectionsToggleBtn').addEventListener('click', () => {
+            console.log('Collections toggle button clicked');
             const overlay = document.getElementById('collectionsOverlay');
             const panel = document.getElementById('collectionsPanel');
+            
+            console.log('Overlay element:', overlay);
+            console.log('Panel element:', panel);
+            
+            if (!overlay || !panel) {
+                console.error('Collections elements not found!');
+                return;
+            }
+            
+            // Ensure overlay is visible with high z-index
             overlay.classList.remove('hidden');
+            overlay.style.display = 'block';
+            overlay.style.zIndex = '60'; // Higher than header (z-50)
+            overlay.style.position = 'fixed';
+            overlay.style.inset = '0';
+            
+            console.log('Collections overlay should now be visible');
+            
             setTimeout(() => {
                 panel.classList.remove('translate-x-full');
+                console.log('Collections panel should now slide in');
             }, 10);
         });
 
         document.getElementById('closeCollectionsBtn').addEventListener('click', () => {
             const overlay = document.getElementById('collectionsOverlay');
             const panel = document.getElementById('collectionsPanel');
+            
+            console.log('Closing collections panel');
+            
             panel.classList.add('translate-x-full');
             setTimeout(() => {
+                // Clear inline styles first, then add hidden class
+                overlay.style.display = '';
+                overlay.style.zIndex = '';
+                overlay.style.position = '';
+                overlay.style.inset = '';
                 overlay.classList.add('hidden');
+                
+                console.log('Collections overlay hidden and styles cleared');
             }, 300);
         });
 
@@ -1069,8 +1112,11 @@
 
         // Clear AI recommendations (confirmed)
         function confirmCloseRecommendations() {
-            // Close confirmation dialog
-            document.querySelector('.fixed.z-60').remove();
+            // Close confirmation dialog (with safety check)
+            const dialog = document.querySelector('.fixed.z-60');
+            if (dialog) {
+                dialog.remove();
+            }
             
             // Clear the recommendations data
             recommendedStores = [];
@@ -1089,8 +1135,11 @@
 
         // Hide recommendations instead of closing (from confirmation dialog)
         function minimizeInsteadOfClose() {
-            // Close the confirmation dialog
-            document.querySelector('.fixed.z-60').remove();
+            // Close the confirmation dialog (with safety check)
+            const dialog = document.querySelector('.fixed.z-60');
+            if (dialog) {
+                dialog.remove();
+            }
             
             // Close the store panel but keep recommendations data
             const panel = document.getElementById('storeListPanel');
@@ -1178,41 +1227,7 @@
         window.minimizeInsteadOfClose = minimizeInsteadOfClose;
         window.confirmCloseRecommendations = confirmCloseRecommendations;
 
-        // Minimize AI Recommendations
-        document.getElementById('minimizeRecommendationsBtn').addEventListener('click', () => {
-            const panel = document.getElementById('recommendationsPanel');
-            const minimized = document.getElementById('minimizedRecommendations');
-            
-            // Hide the main panel
-            panel.classList.add('translate-y-full');
-            setTimeout(() => {
-                panel.classList.add('hidden');
-                
-                // Show the minimized widget
-                minimized.classList.remove('hidden');
-                setTimeout(() => {
-                    minimized.classList.remove('scale-0');
-                }, 10);
-            }, 300);
-        });
-
-        // Restore AI Recommendations from minimized state
-        document.getElementById('minimizedRecommendations').addEventListener('click', () => {
-            const panel = document.getElementById('recommendationsPanel');
-            const minimized = document.getElementById('minimizedRecommendations');
-            
-            // Hide minimized widget
-            minimized.classList.add('scale-0');
-            setTimeout(() => {
-                minimized.classList.add('hidden');
-                
-                // Show the main panel
-                panel.classList.remove('hidden');
-                setTimeout(() => {
-                    panel.classList.remove('translate-y-full');
-                }, 10);
-            }, 300);
-        });
+        // Note: Minimize/restore functionality removed as the UI elements don't exist in current design
 
         // Process AI recommendations to update map
         function processAIRecommendations(content) {
@@ -1387,39 +1402,134 @@
             }
         }
 
-        // Search for toy stores using Google Places API
+        // Search for multiple store types using Google Places API
         function searchToyStores(location) {
+            // Protect UI elements at the start of store search
+            console.log('🔍 Starting store search - protecting UI elements');
+            ensureUIElementsVisibleEnhanced();
+            
             if (!service || !isMapInitialized) {
                 console.log('Service or map not ready, using fallback data');
                 loadMockData();
                 return;
             }
 
-            const request = {
-                location: location,
-                radius: 5000, // 5km radius
-                keyword: 'toy store toys',
-                type: 'store'
-            };
+            // Show loading indicator for store search
+            console.log('Starting store search for location:', location);
 
-            try {
-                service.nearbySearch(request, (results, status) => {
-                    if (status === google.maps.places.PlacesServiceStatus.OK) {
-                        processToyStores(results);
+            // Multiple search keywords for different store types
+            const searchKeywords = [
+                'toy store',
+                'hobby shop',
+                'anime manga collectibles',
+                'gaming card shop'
+            ];
+
+            let allResults = [];
+            let completedSearches = 0;
+            const totalSearches = searchKeywords.length;
+
+            // Function to handle completion of all searches
+            function handleSearchCompletion() {
+                console.log(`Completed ${completedSearches}/${totalSearches} searches`);
+                
+                // Protect UI during search processing
+                ensureUIElementsVisibleEnhanced();
+                
+                if (completedSearches === totalSearches) {
+                    // Remove duplicates based on place_id
+                    const uniqueResults = allResults.filter((result, index, self) => 
+                        index === self.findIndex(r => r.place_id === result.place_id)
+                    );
+                    
+                    console.log(`Found ${uniqueResults.length} unique stores total`);
+                    
+                    if (uniqueResults.length > 0) {
+                        processToyStores(uniqueResults);
                     } else {
-                        console.log('Places search failed:', status);
-                        // Fallback to mock data
+                        console.log('No stores found with any keywords, using fallback data');
                         loadMockData();
                     }
-                });
-            } catch (error) {
-                console.error('Error during places search:', error);
-                loadMockData();
+                    
+                    // Ensure stores are rendered and show stores button is available
+                    setTimeout(() => {
+                        renderStores();
+                        
+                        // Make sure Show Stores button is fully functional
+                        const showStoresBtn = document.getElementById('showStoresBtn');
+                        const storePanel = document.getElementById('storeListPanel');
+                        
+                        if (toyStores.length > 0 && showStoresBtn) {
+                            // Reset button to full functionality
+                            showStoresBtn.style.display = 'block';
+                            showStoresBtn.disabled = false;
+                            showStoresBtn.style.opacity = '1';
+                            showStoresBtn.style.pointerEvents = 'auto';
+                            
+                            // Ensure panel is hidden so button can show
+                            if (!storePanel.classList.contains('translate-y-full')) {
+                                storePanel.classList.add('translate-y-full');
+                            }
+                            
+                            console.log(`Show Stores button restored with ${toyStores.length} stores available`);
+                            
+                            // Add temporary highlight to show button is active
+                            showStoresBtn.classList.add('animate-pulse');
+                            setTimeout(() => {
+                                showStoresBtn.classList.remove('animate-pulse');
+                            }, 2000);
+                            
+                            // Ensure the event listener is working by re-attaching it
+                            ensureShowStoresButtonWorks();
+                        } else {
+                            console.log('No stores found or button not available');
+                        }
+                    }, 200);
+                }
             }
+
+            // Search for each keyword
+            searchKeywords.forEach((keyword, index) => {
+                const request = {
+                    location: location,
+                    radius: 5000, // 5km radius
+                    keyword: keyword,
+                    type: 'store'
+                };
+
+                try {
+                    // Add delay between requests to avoid rate limiting
+                    setTimeout(() => {
+                        service.nearbySearch(request, (results, status) => {
+                            completedSearches++;
+                            
+                            if (status === google.maps.places.PlacesServiceStatus.OK) {
+                                console.log(`Found ${results.length} results for "${keyword}"`);
+                                allResults = allResults.concat(results);
+                            } else {
+                                console.log(`Search failed for "${keyword}":`, status);
+                            }
+                            
+                            handleSearchCompletion();
+                        });
+                    }, index * 200); // 200ms delay between each search
+                } catch (error) {
+                    console.error(`Error during search for "${keyword}":`, error);
+                    completedSearches++;
+                    handleSearchCompletion();
+                }
+            });
         }
 
         // Process toy store results from Google Places
         function processToyStores(places) {
+            console.log('Processing', places.length, 'places from Google Places API');
+            
+            // Protect UI elements during store processing
+            console.log('🛡️ Protecting UI during store processing...');
+            ensureUIElementsVisibleEnhanced();
+            
+            // Clear existing data
             toyStores = [];
             storeMarkers = [];
 
@@ -1442,6 +1552,7 @@
                     };
 
                     toyStores.push(store);
+                    console.log('Added store:', store.name, 'at distance:', store.distance);
 
                     // Create map marker
                     const marker = new google.maps.Marker({
@@ -1472,9 +1583,26 @@
 
             // Sort stores by distance
             toyStores.sort((a, b) => parseFloat(a.distance) - parseFloat(b.distance));
+            console.log('Total stores processed:', toyStores.length);
 
-            // Update UI
-            renderStores();
+            // Protect UI elements after processing stores
+            console.log('🛡️ Final UI protection after store processing...');
+            ensureUIElementsVisibleEnhanced();
+
+            // Force immediate render of stores
+            setTimeout(() => {
+                renderStores();
+                console.log('Store list rendered with', toyStores.length, 'stores');
+                
+                // Double-check store list content
+                const nearbyContent = document.getElementById('nearbyTabContent');
+                console.log('Nearby content HTML length:', nearbyContent.innerHTML.length);
+                
+                if (nearbyContent.innerHTML.length === 0 && toyStores.length > 0) {
+                    console.warn('Store list is empty despite having stores! Force re-rendering...');
+                    forceRenderStores();
+                }
+            }, 100);
         }
 
         // Get detailed information about a place
@@ -1531,20 +1659,75 @@
             const nameUpper = name.toUpperCase();
             const specialties = [];
 
-            // Brand-specific specialties
+            // Toy Store Specialties
             if (nameUpper.includes('TOYS R US') || nameUpper.includes('TOYSRUS')) {
                 specialties.push('Action Figures', 'LEGO', 'Board Games');
             } else if (nameUpper.includes('TARGET')) {
                 specialties.push('Dolls', 'Educational Toys', 'Outdoor Toys');
             } else if (nameUpper.includes('WALMART')) {
                 specialties.push('Budget Toys', 'Electronic Toys', 'Craft Supplies');
-            } else if (nameUpper.includes('GAMESTOP')) {
-                specialties.push('Video Games', 'Collectibles', 'Action Figures');
-            } else if (nameUpper.includes('BARNES') && nameUpper.includes('NOBLE')) {
-                specialties.push('Educational Toys', 'Books', 'Puzzles');
+            }
+            
+            // Hobby Store Specialties
+            else if (nameUpper.includes('HOBBY') || nameUpper.includes('HOBBIES')) {
+                specialties.push('Model Kits', 'RC Vehicles', 'Crafts', 'Train Sets');
+            } else if (nameUpper.includes('CRAFT') || nameUpper.includes('ARTS')) {
+                specialties.push('Art Supplies', 'DIY Kits', 'Scrapbooking', 'Painting');
+            } else if (nameUpper.includes('MODEL')) {
+                specialties.push('Scale Models', 'Model Trains', 'Model Cars', 'Model Planes');
+            }
+            
+            // Gaming & Collectibles Specialties
+            else if (nameUpper.includes('GAMESTOP') || nameUpper.includes('GAME')) {
+                specialties.push('Video Games', 'Collectibles', 'Action Figures', 'Gaming Cards');
+            } else if (nameUpper.includes('COMIC') || nameUpper.includes('COMICS')) {
+                specialties.push('Comics', 'Graphic Novels', 'Collectible Cards', 'Pop Figures');
+            } else if (nameUpper.includes('CARD') && nameUpper.includes('SHOP')) {
+                specialties.push('Trading Cards', 'Pokemon Cards', 'Board Games', 'Card Games');
+            }
+            
+            // Anime & Manga Specialties  
+            else if (nameUpper.includes('ANIME') || nameUpper.includes('MANGA')) {
+                specialties.push('Anime Figures', 'Manga Books', 'Cosplay Items', 'Japanese Imports');
+            } else if (nameUpper.includes('JAPAN') || nameUpper.includes('OTAKU')) {
+                specialties.push('Japanese Toys', 'Anime Collectibles', 'Gundam Models', 'Plushies');
+            } else if (nameUpper.includes('FIGURINE') || nameUpper.includes('FIGURE')) {
+                specialties.push('Action Figures', 'Collectible Figures', 'Display Models', 'Statues');
+            }
+            
+            // Bookstores with toys
+            else if (nameUpper.includes('BARNES') && nameUpper.includes('NOBLE')) {
+                specialties.push('Educational Toys', 'Books', 'Puzzles', 'Board Games');
+            } else if (nameUpper.includes('BOOK') && (nameUpper.includes('STORE') || nameUpper.includes('SHOP'))) {
+                specialties.push('Educational Games', 'Puzzles', 'Learning Toys', 'Books');
+            }
+            
+            // Generic categorization based on keywords in name
+            else if (nameUpper.includes('TOY') || nameUpper.includes('PLAY')) {
+                specialties.push('Toys', 'Games', 'Educational Toys');
+            } else if (nameUpper.includes('COLLECT')) {
+                specialties.push('Collectibles', 'Trading Cards', 'Memorabilia');
+            } else if (nameUpper.includes('VINTAGE') || nameUpper.includes('ANTIQUE')) {
+                specialties.push('Vintage Toys', 'Retro Games', 'Classic Collectibles');
             } else {
-                // Generic toy store specialties
+                // Default fallback specialties
                 specialties.push('Toys', 'Games', 'Collectibles');
+            }
+
+            // Add additional specialties based on Google Places types
+            if (types && Array.isArray(types)) {
+                if (types.includes('book_store')) {
+                    if (!specialties.includes('Books')) specialties.push('Books');
+                    if (!specialties.includes('Educational Toys')) specialties.push('Educational Toys');
+                }
+                if (types.includes('electronics_store')) {
+                    if (!specialties.includes('Electronic Toys')) specialties.push('Electronic Toys');
+                    if (!specialties.includes('Video Games')) specialties.push('Video Games');
+                }
+                if (types.includes('clothing_store') || types.includes('shoe_store')) {
+                    if (!specialties.includes('Costumes')) specialties.push('Costumes');
+                    if (!specialties.includes('Dress-up')) specialties.push('Dress-up');
+                }
             }
 
             return specialties;
@@ -1630,25 +1813,150 @@
                     hours: 'Open until 10 PM'
                 },
                 {
-                    id: 'walmart',
-                    name: 'Walmart Toys',
-                    address: '789 Retail Blvd',
+                    id: 'hobby',
+                    name: 'Hobby Haven',
+                    address: '789 Craft Lane',
                     distance: '1.2 miles',
-                    rating: 4.0,
-                    specialties: ['Budget Toys', 'Electronic Toys', 'Craft Supplies'],
-                    hours: 'Open 24 hours'
+                    rating: 4.6,
+                    specialties: ['Model Kits', 'RC Vehicles', 'Crafts', 'Train Sets'],
+                    hours: 'Open until 8 PM'
                 },
                 {
-                    id: 'local',
-                    name: 'Little Dreamers Toy Shop',
-                    address: '321 Local St',
+                    id: 'anime',
+                    name: 'Tokyo Dreams Anime Shop',
+                    address: '555 Otaku Avenue',
+                    distance: '0.8 miles',
+                    rating: 4.7,
+                    specialties: ['Anime Figures', 'Manga Books', 'Cosplay Items', 'Japanese Imports'],
+                    hours: 'Open until 9 PM'
+                },
+                {
+                    id: 'comics',
+                    name: 'Comic & Card Emporium',
+                    address: '321 Hero Street',
                     distance: '0.9 miles',
+                    rating: 4.4,
+                    specialties: ['Comics', 'Trading Cards', 'Pokemon Cards', 'Pop Figures'],
+                    hours: 'Open until 7 PM'
+                },
+                {
+                    id: 'vintage',
+                    name: 'Retro Toy Vault',
+                    address: '654 Nostalgia Drive',
+                    distance: '1.5 miles',
                     rating: 4.8,
-                    specialties: ['Handmade Toys', 'Vintage Collectibles', 'Puzzles'],
+                    specialties: ['Vintage Toys', 'Retro Games', 'Classic Collectibles', 'Antique Figures'],
                     hours: 'Open until 6 PM'
                 }
             ];
             renderStores();
+            
+            // Ensure Show Stores button is restored after loading mock data
+            setTimeout(() => {
+                const showStoresBtn = document.getElementById('showStoresBtn');
+                if (showStoresBtn && toyStores.length > 0) {
+                    showStoresBtn.style.display = 'block';
+                    showStoresBtn.disabled = false;
+                    showStoresBtn.style.opacity = '1';
+                    showStoresBtn.style.pointerEvents = 'auto';
+                    console.log('Show Stores button restored with mock data');
+                }
+            }, 100);
+        }
+
+        // Function to ensure Show Stores button functionality
+        function ensureShowStoresButtonWorks() {
+            const showStoresBtn = document.getElementById('showStoresBtn');
+            if (!showStoresBtn) {
+                console.error('Show Stores button not found!');
+                return;
+            }
+
+            // Remove existing click handlers by cloning (this removes all event listeners)
+            const newButton = showStoresBtn.cloneNode(true);
+            showStoresBtn.parentNode.replaceChild(newButton, showStoresBtn);
+            
+            // Ensure button is fully functional
+            newButton.disabled = false;
+            newButton.style.display = 'block';
+            newButton.style.opacity = '1';
+            newButton.style.pointerEvents = 'auto';
+            newButton.style.cursor = 'pointer';
+            newButton.classList.remove('opacity-50', 'cursor-not-allowed');
+            
+            // Add fresh click event listener with robust element finding
+            newButton.addEventListener('click', function(e) {
+                console.log('Show Stores button clicked after relocation');
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // More robust element finding with fallback creation
+                let panel = document.getElementById('storeListPanel');
+                let overlay = document.getElementById('storeListOverlay');
+                const btn = document.getElementById('showStoresBtn');
+                
+                // Verify elements exist and create if missing
+                if (!panel) {
+                    console.error('Store panel not found!');
+                    return;
+                }
+                
+                if (!overlay) {
+                    console.warn('Overlay not found, recreating...');
+                    // Create overlay if it doesn't exist with LOWER z-index than header/search
+                    overlay = document.createElement('div');
+                    overlay.id = 'storeListOverlay';
+                    overlay.className = 'fixed inset-0 bg-black bg-opacity-25 z-30 hidden transition-opacity duration-300';
+                    document.body.appendChild(overlay);
+                    
+                    // Add click handler to close on overlay click
+                    overlay.addEventListener('click', (e) => {
+                        if (e.target.id === 'storeListOverlay') {
+                            closeStorePanel();
+                        }
+                    });
+                }
+                
+                if (!btn) {
+                    console.error('Button reference lost!');
+                    return;
+                }
+                
+                try {
+                    console.log('Opening store panel...');
+                    
+                    // Show overlay first
+                    overlay.classList.remove('hidden');
+                    overlay.style.opacity = '1';
+                    
+                    // Show panel
+                    panel.classList.remove('translate-y-full');
+                    btn.style.display = 'none';
+                    
+                    console.log('Store panel opened successfully');
+                    
+                    // Ensure stores are rendered in the panel
+                    setTimeout(() => {
+                        if (toyStores.length > 0) {
+                            renderStores();
+                            console.log('Stores re-rendered in panel');
+                        }
+                    }, 100);
+                    
+                } catch (error) {
+                    console.error('Error opening store panel:', error);
+                }
+            });
+            
+            // Add touch event for mobile devices
+            newButton.addEventListener('touchstart', function(e) {
+                console.log('Show Stores button touched');
+                // Prevent touch delay on mobile
+                e.preventDefault();
+                newButton.click();
+            }, { passive: false });
+            
+            console.log('Show Stores button fully restored and functional');
         }
 
         // Search functionality
@@ -1805,6 +2113,10 @@
                         });
                         toyStores = [];
                         storeMarkers = [];
+                        
+                        // Reset AI recommendations when location changes
+                        recommendedStores = [];
+                        topMatchStore = null;
                         
                         // Search for toy stores near new location
                         searchToyStores(newLocation);
@@ -2015,6 +2327,14 @@
             searchManualLocation();
         }
 
+        // Simple cleanup function for temporary toasts only
+        function cleanupTemporaryElements() {
+            // Only remove location toasts to prevent conflicts
+            document.querySelectorAll('.location-toast').forEach(element => {
+                element.remove();
+            });
+        }
+
         function searchManualLocation() {
             const locationInput = document.getElementById('manualLocationInput');
             const location = locationInput.value.trim();
@@ -2023,6 +2343,10 @@
                 showAlert('Please enter a location');
                 return;
             }
+            
+            // STEP 1: Aggressive UI protection before ANY location changes
+            console.log('🛡️ STEP 1: Pre-location UI protection');
+            ensureUIElementsVisibleEnhanced();
             
             // Use Google Geocoding to convert address to coordinates
             const geocoder = new google.maps.Geocoder();
@@ -2069,11 +2393,46 @@
                     toyStores = [];
                     storeMarkers = [];
                     
+                    // Reset AI recommendations when location changes
+                    recommendedStores = [];
+                    topMatchStore = null;
+                    
+                    // STEP 2: UI protection after map update
+                    console.log('🛡️ STEP 2: Post-map-update UI protection');
+                    ensureUIElementsVisibleEnhanced();
+                    
+                    // Ensure UI elements remain visible after location update
+                    setTimeout(() => {
+                        console.log('🛡️ STEP 3: Pre-store-search UI protection');
+                        ensureUIElementsVisibleEnhanced();
+                    }, 100);
+                    
                     // Search for toy stores
                     searchToyStores(newLocation);
                     
-                    // Close modal
-                    document.querySelector('.fixed').remove();
+                    // Close modal properly by finding the specific modal
+                    const modal = document.querySelector('.fixed.inset-0.bg-black.bg-opacity-50');
+                    if (modal) {
+                        modal.remove();
+                    }
+                    
+                    // STEP 4: Final aggressive UI protection
+                    setTimeout(() => {
+                        console.log('🛡️ STEP 4: Final UI protection check');
+                        ensureUIElementsVisibleEnhanced();
+                    }, 500);
+                    
+                    // STEP 5: Continuous monitoring for first 10 seconds
+                    const monitoringInterval = setInterval(() => {
+                        console.log('🛡️ MONITORING: Continuous UI protection');
+                        ensureUIElementsVisibleEnhanced();
+                    }, 1000);
+                    
+                    // Stop monitoring after 10 seconds
+                    setTimeout(() => {
+                        clearInterval(monitoringInterval);
+                        console.log('🛡️ MONITORING: UI protection monitoring stopped');
+                    }, 10000);
                     
                     showAlert(`Location set to ${results[0].formatted_address}. Finding toy stores...`);
                 } else {
@@ -2319,8 +2678,278 @@
             }, 2500);
         }
 
-        // Make focusStoreOnMap globally available
+        // Force render stores when empty despite having data
+        function forceRenderStores() {
+            console.log('Force rendering stores...');
+            const nearbyContent = document.getElementById('nearbyTabContent');
+            
+            if (toyStores.length === 0) {
+                nearbyContent.innerHTML = `
+                    <div class="text-center py-8">
+                        <i class="fas fa-store text-3xl text-gray-400 dark:text-gray-500 mb-3"></i>
+                        <p class="text-gray-600 dark:text-gray-400">No toy stores found</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-500">Try a different location or check back later</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Force regenerate the store list HTML
+            nearbyContent.innerHTML = toyStores.map(store => {
+                const isRecommended = recommendedStores.includes(store.id);
+                const isTopMatch = topMatchStore === store.id;
+                
+                let badgeHtml = '';
+                if (isTopMatch) {
+                    badgeHtml = '<div class="flex items-center mb-2"><span class="text-xs bg-green-500 text-white px-2 py-1 rounded-full flex items-center"><i class="fas fa-crown mr-1"></i>Top AI Match</span></div>';
+                } else if (isRecommended) {
+                    badgeHtml = '<div class="flex items-center mb-2"><span class="text-xs bg-yellow-400 text-gray-900 px-2 py-1 rounded-full flex items-center"><i class="fas fa-robot mr-1"></i>AI Recommended</span></div>';
+                }
+                
+                return `
+                    <div onclick="focusStoreOnMap('${store.id}')" class="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md hover:scale-105 transition-all cursor-pointer ${isRecommended ? 'ring-2 ring-yellow-200 dark:ring-yellow-600' : ''} ${isTopMatch ? 'ring-2 ring-green-200 dark:ring-green-600' : ''}">
+                        ${badgeHtml}
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-semibold text-gray-900 dark:text-white">${store.name}</h4>
+                            <div class="flex items-center text-yellow-500">
+                                <i class="fas fa-star mr-1"></i>
+                                <span class="text-sm">${store.rating}</span>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">${store.address}</p>
+                        <p class="text-sm text-primary font-medium mb-2">${store.distance} away</p>
+                        <div class="flex flex-wrap gap-1 mb-2">
+                            ${store.specialties.map(spec => `
+                                <span class="text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded">${spec}</span>
+                            `).join('')}
+                        </div>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">${store.hours}</p>
+                        ${isTopMatch ? '<div class="mt-2"><p class="text-xs text-green-600 dark:text-green-400 font-medium">🎯 Perfect match for your preferences!</p></div>' : ''}
+                        ${isRecommended && !isTopMatch ? '<div class="mt-2"><p class="text-xs text-yellow-600 dark:text-yellow-400 font-medium">🤖 Recommended by AI</p></div>' : ''}
+                        <div class="mt-3 pt-2 border-t border-gray-200 dark:border-gray-600">
+                            <div class="flex items-center text-blue-500 dark:text-blue-400 text-xs">
+                                <i class="fas fa-map-marker-alt mr-1"></i>
+                                <span>Click to view on map</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            console.log('Force render complete, stores now showing:', nearbyContent.innerHTML.length > 0);
+        }
+
+        // Function to ensure critical UI elements remain visible
+        function ensureUIElementsVisible() {
+            // Get header and search elements
+            const header = document.querySelector('header');
+            const searchOverlay = document.querySelector('.fixed.top-16');
+            const mapLegend = document.querySelector('.mobile-landscape-legend-adaptive');
+            
+            // Restore header visibility and styles
+            if (header) {
+                header.style.display = 'block';
+                header.style.visibility = 'visible';
+                header.style.opacity = '1';
+                header.style.position = 'fixed';
+                header.style.top = '0';
+                header.style.left = '0';
+                header.style.right = '0';
+                header.style.zIndex = '50';
+                header.classList.remove('hidden');
+                console.log('Header visibility restored');
+            }
+            
+            // Restore search overlay visibility and styles
+            if (searchOverlay) {
+                searchOverlay.style.display = 'block';
+                searchOverlay.style.visibility = 'visible';
+                searchOverlay.style.opacity = '1';
+                searchOverlay.style.position = 'fixed';
+                searchOverlay.style.zIndex = '30';
+                searchOverlay.classList.remove('hidden');
+                console.log('Search overlay visibility restored');
+            }
+            
+            // Restore map legend visibility
+            if (mapLegend) {
+                mapLegend.style.display = 'block';
+                mapLegend.style.visibility = 'visible';
+                mapLegend.style.opacity = '1';
+                mapLegend.classList.remove('hidden');
+                console.log('Map legend visibility restored');
+            }
+            
+            // Force re-check of dark mode to ensure proper styling
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        }
+
+        // Diagnostic function to check UI element status
+        function checkUIElementsStatus() {
+            const header = document.querySelector('header');
+            const searchOverlay = document.querySelector('.fixed.top-16');
+            const mapLegend = document.querySelector('.mobile-landscape-legend-adaptive');
+            
+            console.log('=== UI Elements Status Check ===');
+            console.log('Header:', {
+                exists: !!header,
+                display: header?.style.display || 'default',
+                visibility: header?.style.visibility || 'default',
+                opacity: header?.style.opacity || 'default',
+                zIndex: header?.style.zIndex || 'default',
+                classes: header?.className || 'none'
+            });
+            
+            console.log('Search Overlay:', {
+                exists: !!searchOverlay,
+                display: searchOverlay?.style.display || 'default',
+                visibility: searchOverlay?.style.visibility || 'default', 
+                opacity: searchOverlay?.style.opacity || 'default',
+                zIndex: searchOverlay?.style.zIndex || 'default',
+                classes: searchOverlay?.className || 'none'
+            });
+            
+            console.log('Map Legend:', {
+                exists: !!mapLegend,
+                display: mapLegend?.style.display || 'default',
+                visibility: mapLegend?.style.visibility || 'default',
+                opacity: mapLegend?.style.opacity || 'default',
+                classes: mapLegend?.className || 'none'
+            });
+            
+            // Check for conflicting elements
+            const allFixedElements = document.querySelectorAll('.fixed');
+            console.log('All fixed elements count:', allFixedElements.length);
+            allFixedElements.forEach((el, index) => {
+                const rect = el.getBoundingClientRect();
+                console.log(`Fixed element ${index}:`, {
+                    tag: el.tagName,
+                    zIndex: window.getComputedStyle(el).zIndex,
+                    position: `${rect.top}, ${rect.left}`,
+                    size: `${rect.width}x${rect.height}`,
+                    classes: el.className.slice(0, 50) + '...'
+                });
+            });
+        }
+
+        // Enhanced ensureUIElementsVisible with more aggressive restoration
+        function ensureUIElementsVisibleEnhanced() {
+            console.log('🔧 Running enhanced UI protection...');
+            
+            // Check if DOM is ready
+            if (document.readyState === 'loading') {
+                console.warn('⚠️ DOM still loading, deferring UI protection...');
+                document.addEventListener('DOMContentLoaded', ensureUIElementsVisibleEnhanced);
+                return;
+            }
+            
+            // Debug: Check all elements in DOM
+            console.log('🔍 DOM Debug - All elements:');
+            console.log('- Total elements:', document.querySelectorAll('*').length);
+            console.log('- Header tags:', document.querySelectorAll('header').length);
+            console.log('- Fixed elements:', document.querySelectorAll('.fixed').length);
+            console.log('- Body children:', document.body.children.length);
+            
+            // Get elements with detailed debugging
+            const header = document.querySelector('header');
+            const searchOverlay = document.querySelector('.fixed.top-16');
+            const mapLegend = document.querySelector('.mobile-landscape-legend-adaptive');
+            
+            // Additional selectors to try if main ones fail
+            const headerAlt = document.getElementsByTagName('header')[0];
+            const searchAlt = document.querySelector('[class*="top-16"]');
+            const legendAlt = document.querySelector('[class*="legend"]');
+            
+            console.log('🔍 Element search results:');
+            console.log('- header (querySelector):', !!header);
+            console.log('- header (getElementsByTagName):', !!headerAlt);
+            console.log('- searchOverlay:', !!searchOverlay);
+            console.log('- searchAlt:', !!searchAlt);
+            console.log('- mapLegend:', !!mapLegend);
+            console.log('- legendAlt:', !!legendAlt);
+            
+            // Check status before
+            checkUIElementsStatus();
+            
+            // Restore header with maximum priority
+            if (header) {
+                // Remove any conflicting classes
+                header.classList.remove('hidden', 'invisible', 'opacity-0');
+                
+                // Force styles with !important equivalent
+                header.style.setProperty('display', 'block', 'important');
+                header.style.setProperty('visibility', 'visible', 'important');
+                header.style.setProperty('opacity', '1', 'important');
+                header.style.setProperty('position', 'fixed', 'important');
+                header.style.setProperty('top', '0', 'important');
+                header.style.setProperty('left', '0', 'important');
+                header.style.setProperty('right', '0', 'important');
+                header.style.setProperty('z-index', '50', 'important');
+                header.style.setProperty('pointer-events', 'auto', 'important');
+                
+                console.log('✅ Header restored with priority styles');
+            } else {
+                console.error('❌ Header element not found!');
+            }
+            
+            // Restore search overlay with maximum priority
+            if (searchOverlay) {
+                // Remove conflicting classes
+                searchOverlay.classList.remove('hidden', 'invisible', 'opacity-0');
+                
+                // Force styles
+                searchOverlay.style.setProperty('display', 'block', 'important');
+                searchOverlay.style.setProperty('visibility', 'visible', 'important');
+                searchOverlay.style.setProperty('opacity', '1', 'important');
+                searchOverlay.style.setProperty('position', 'fixed', 'important');
+                searchOverlay.style.setProperty('z-index', '30', 'important');
+                searchOverlay.style.setProperty('pointer-events', 'auto', 'important');
+                
+                console.log('✅ Search overlay restored with priority styles');
+            } else {
+                console.error('❌ Search overlay element not found!');
+            }
+            
+            // Restore map legend
+            if (mapLegend) {
+                mapLegend.classList.remove('hidden', 'invisible', 'opacity-0');
+                mapLegend.style.setProperty('display', 'block', 'important');
+                mapLegend.style.setProperty('visibility', 'visible', 'important');
+                mapLegend.style.setProperty('opacity', '1', 'important');
+                
+                console.log('✅ Map legend restored');
+            }
+            
+            // Check for and remove any full-screen overlays that might be covering UI
+            const suspiciousOverlays = document.querySelectorAll('.fixed.inset-0');
+            suspiciousOverlays.forEach((overlay, index) => {
+                const computedStyle = window.getComputedStyle(overlay);
+                const zIndex = parseInt(computedStyle.zIndex) || 0;
+                
+                if (zIndex > 50 && !overlay.id.includes('modal') && !overlay.id.includes('loading')) {
+                    console.warn(`🚨 Found suspicious overlay with z-index ${zIndex}:`, overlay);
+                    // Optionally lower its z-index or hide it
+                    overlay.style.setProperty('z-index', '25', 'important');
+                }
+            });
+            
+            // Final status check
+            setTimeout(() => {
+                console.log('🔍 Post-restoration status:');
+                checkUIElementsStatus();
+            }, 100);
+        }
+
+        // Make functions globally available
         window.focusStoreOnMap = focusStoreOnMap;
+        window.forceRenderStores = forceRenderStores;
+        window.ensureUIElementsVisible = ensureUIElementsVisible;
+        window.ensureUIElementsVisibleEnhanced = ensureUIElementsVisibleEnhanced;
+        window.checkUIElementsStatus = checkUIElementsStatus;
 
         // Add event listener for location button
         document.getElementById('getCurrentLocationBtn').addEventListener('click', getCurrentLocation);
