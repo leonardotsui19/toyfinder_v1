@@ -220,6 +220,29 @@
             }
         }
         
+        /* Google Maps Style Category Pills */
+        .category-pill {
+            @apply flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-full whitespace-nowrap transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-500;
+        }
+        
+        .category-pill.active {
+            @apply bg-primary text-white border-primary hover:bg-primary-dark;
+        }
+        
+        .category-pill:focus {
+            @apply outline-none ring-2 ring-primary ring-opacity-50;
+        }
+        
+        /* Scrollbar hiding for category pills */
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        
         @media (orientation: portrait) {
             .portrait-panel-height {
                 max-height: 60vh;
@@ -262,47 +285,57 @@
         </div>
     </div>
 
-    <!-- Header Overlay -->
-    <header class="fixed top-0 left-0 right-0 vintage-header text-white vintage-shadow z-50">
+    <!-- Floating User Controls (Top Right) -->
+    <div class="fixed top-4 right-4 flex items-center space-x-3 z-50">
+        <!-- Collections Button -->
+        <button id="collectionsToggleBtn" class="w-12 h-12 rounded-full bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center justify-center transition-colors shadow-lg border border-gray-200 dark:border-gray-600" title="Historical Archives">
+            <i class="fas fa-archive text-gray-600 dark:text-gray-400 text-lg"></i>
+        </button>
+        
+        <!-- Profile Button -->
+        <button id="profileBtn" class="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-200 dark:border-gray-600 hover:border-primary transition-colors shadow-lg" title="Profile">
+            <img id="userAvatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=40&amp;h=40&amp;fit=crop&amp;crop=face" alt="Profile" class="w-full h-full object-cover">
+        </button>
+    </div>
+
+    <!-- Google Maps Style Header -->
+    <header class="fixed top-0 left-0 right-0 bg-white dark:bg-gray-900 shadow-lg z-40">
+        <!-- Main Search Bar (Google Maps Style) -->
         <div class="px-3 sm:px-4 py-3 sm:py-4">
-            <div class="flex items-center justify-between">
-                <h1 class="text-lg sm:text-xl font-bold flex items-center vintage-fade">
-                    <i class="fas fa-map mr-1 sm:mr-2 text-sm sm:text-base"></i>
-                    <span class="hidden xs:inline">🗺️ Historical Maps</span>
-                    <span class="xs:hidden">🗺️ Maps</span>
-                </h1>
-                <div class="flex items-center space-x-1 sm:space-x-2">
-                    <button id="collectionsToggleBtn" class="vintage-button p-1.5 sm:p-2 transition-all">
-                        <i class="fas fa-archive text-sm sm:text-base"></i>
-                    </button>
-                    <button id="profileBtn" class="flex items-center space-x-1 sm:space-x-2 vintage-button px-1 sm:px-2 py-1 transition-all">
-                        <img id="userAvatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=40&amp;h=40&amp;fit=crop&amp;crop=face" alt="Profile" class="w-6 h-6 sm:w-7 sm:h-7 rounded-full vintage-border border-2">
-                        <span id="userName" class="hidden sm:inline text-xs sm:text-sm">Cartographer</span>
-                    </button>
+            <div class="relative">
+                <!-- Search Bar Container -->
+                <div class="bg-white dark:bg-gray-800 rounded-full shadow-md border border-gray-200 dark:border-gray-600 flex items-center px-4 py-3 mr-[136px]">
+                    <!-- App Icon/Logo -->
+                    <div class="flex items-center mr-3">
+                        <div class="w-6 h-6 sm:w-7 sm:h-7 bg-gradient-to-br from-amber-600 to-amber-800 rounded-full flex items-center justify-center">
+                            <i class="fas fa-map text-white text-xs sm:text-sm"></i>
+                        </div>
+                    </div>
+                    
+                    <!-- Search Input -->
+                    <input type="text" id="searchInput" placeholder="Search historical locations..." class="flex-1 text-base sm:text-lg text-gray-700 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 bg-transparent focus:outline-none">
                 </div>
             </div>
         </div>
-    </header>
-
-    <!-- Search Overlay -->
-    <div class="fixed top-16 sm:top-20 left-2 right-2 sm:left-4 sm:right-4 z-30 max-w-md">
-        <div class="vintage-overlay vintage-shadow p-3 sm:p-4">
-            <div class="relative mb-2 sm:mb-3">
-                <input type="text" id="searchInput" placeholder="📍 Search historical locations..." class="w-full pl-8 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-3 text-base vintage-search focus:outline-none vintage-text-primary">
-                <i class="fas fa-search absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 vintage-text-secondary text-sm sm:text-base"></i>
-            </div>
-            <div class="flex gap-1 sm:gap-2">
-                <button id="getCurrentLocationBtn" class="flex-1 vintage-button px-2 sm:px-3 py-2 font-medium transition-all flex items-center justify-center text-xs sm:text-sm">
-                    <span class="hidden xs:inline">📍 My Location</span>
-                    <span class="xs:hidden">📍</span>
+        
+        <!-- Action Buttons Below Search Bar -->
+        <div class="px-3 sm:px-4 pb-3 sm:pb-4">
+            <div class="flex justify-center space-x-3 sm:space-x-4">
+                <!-- Location Button -->
+                <button id="getCurrentLocationBtn" class="flex items-center justify-center w-75 px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full transition-colors shadow-sm" title="Update Current Location">
+                    <i class="fas fa-location-arrow text-gray-600 dark:text-gray-400 text-sm mr-2"></i>
+                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">My Location</span>
                 </button>
-                <button id="getRecommendationsBtn" class="flex-1 vintage-button px-2 sm:px-3 py-2 font-medium transition-all flex items-center justify-center text-xs sm:text-sm">
-                    <span class="hidden xs:inline">🗺️ Explore Maps</span>
-                    <span class="xs:hidden">🗺️</span>
+                
+                <!-- AI Recommendations Button -->
+                <button id="getRecommendationsBtn" class="flex items-center justify-center w-75 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-full transition-colors shadow-sm" title="Get AI Recommendations">
+                    <i class="fas fa-compass text-white text-sm mr-2"></i>
+                    <span class="text-sm font-medium">AI Recommendations</span>
                 </button>
             </div>
         </div>
-    </div>
+
+    </header>
 
     <!-- Map Legend -->
     <div class="fixed bottom-16 xs:bottom-12 sm:bottom-8 md:bottom-6 lg:bottom-4 xl:bottom-6 
@@ -1161,7 +1194,7 @@
         function resetStorePanelHeader() {
             const header = document.querySelector('#storeListPanel h3');
             if (header) {
-                header.innerHTML = 'Nearby Stores';
+                header.innerHTML = 'Historical Sites';
             }
         }
 
@@ -1631,8 +1664,13 @@
                     if (uniqueResults.length > 0) {
                         processToyStores(uniqueResults);
                     } else {
-                        console.log('No stores found with any keywords, using fallback data');
-                        loadMockData();
+                        console.log('No stores found with any keywords, clearing store list');
+                        // Clear stores instead of loading mock data
+                        toyStores = [];
+                        storeMarkers = [];
+                        // Reset AI recommendations when no stores found
+                        recommendedStores = [];
+                        topMatchStore = null;
                     }
                     
                     // Ensure stores are rendered and show stores button is available
@@ -1644,7 +1682,7 @@
                         const storePanel = document.getElementById('storeListPanel');
                         
                         if (toyStores.length > 0 && showStoresBtn) {
-                            // Reset button to full functionality
+                            // Reset button to full functionality when stores available
                             showStoresBtn.style.display = 'block';
                             showStoresBtn.disabled = false;
                             showStoresBtn.style.opacity = '1';
@@ -1666,7 +1704,11 @@
                             // Ensure the event listener is working by re-attaching it
                             ensureShowStoresButtonWorks();
                         } else {
-                            console.log('No stores found or button not available');
+                            // Hide show stores button when no stores found
+                            if (showStoresBtn) {
+                                showStoresBtn.style.display = 'none';
+                            }
+                            console.log('No stores found - hiding show stores button');
                         }
                     }, 200);
                 }
@@ -2720,9 +2762,16 @@
             currentUser.preferences.budget = budget;
             currentUser.preferences.ageRange = ageRange;
 
-            // Update UI
-            document.getElementById('userName').textContent = username;
-            document.getElementById('userAvatar').src = currentUser.avatar;
+            // Update UI (with null checks)
+            const userNameElement = document.getElementById('userName');
+            const userAvatarElement = document.getElementById('userAvatar');
+            
+            if (userNameElement) {
+                userNameElement.textContent = username;
+            }
+            if (userAvatarElement) {
+                userAvatarElement.src = currentUser.avatar;
+            }
 
             // Save to localStorage (since we can't use sessionStorage)
             try {
@@ -2744,8 +2793,15 @@
         function loadUserProfile() {
             // In a real app, you'd load from your backend or storage
             // For demo, we'll use the default profile
-            document.getElementById('userName').textContent = currentUser.username;
-            document.getElementById('userAvatar').src = currentUser.avatar;
+            const userNameElement = document.getElementById('userName');
+            const userAvatarElement = document.getElementById('userAvatar');
+            
+            if (userNameElement) {
+                userNameElement.textContent = currentUser.username;
+            }
+            if (userAvatarElement) {
+                userAvatarElement.src = currentUser.avatar;
+            }
         }
 
         // Generate user ID for posts
@@ -3033,25 +3089,23 @@
             
             // Get elements with detailed debugging
             const header = document.querySelector('header');
-            const searchOverlay = document.querySelector('.fixed.top-16');
             const mapLegend = document.querySelector('.mobile-landscape-legend-adaptive');
             const collectionsBtn = document.getElementById('collectionsToggleBtn');
             const profileBtn = document.getElementById('profileBtn');
+            const searchInput = document.getElementById('searchInput');
             
             // Additional selectors to try if main ones fail
             const headerAlt = document.getElementsByTagName('header')[0];
-            const searchAlt = document.querySelector('[class*="top-16"]');
             const legendAlt = document.querySelector('[class*="legend"]');
             
             console.log('🔍 Element search results:');
             console.log('- header (querySelector):', !!header);
             console.log('- header (getElementsByTagName):', !!headerAlt);
-            console.log('- searchOverlay:', !!searchOverlay);
-            console.log('- searchAlt:', !!searchAlt);
             console.log('- mapLegend:', !!mapLegend);
             console.log('- legendAlt:', !!legendAlt);
             console.log('- collectionsBtn:', !!collectionsBtn);
             console.log('- profileBtn:', !!profileBtn);
+            console.log('- searchInput:', !!searchInput);
             
             // Check status before
             checkUIElementsStatus();
@@ -3077,22 +3131,11 @@
                 console.error('❌ Header element not found!');
             }
             
-            // Restore search overlay with maximum priority
-            if (searchOverlay) {
-                // Remove conflicting classes
-                searchOverlay.classList.remove('hidden', 'invisible', 'opacity-0');
-                
-                // Force styles
-                searchOverlay.style.setProperty('display', 'block', 'important');
-                searchOverlay.style.setProperty('visibility', 'visible', 'important');
-                searchOverlay.style.setProperty('opacity', '1', 'important');
-                searchOverlay.style.setProperty('position', 'fixed', 'important');
-                searchOverlay.style.setProperty('z-index', '30', 'important');
-                searchOverlay.style.setProperty('pointer-events', 'auto', 'important');
-                
-                console.log('✅ Search overlay restored with priority styles');
-            } else {
-                console.error('❌ Search overlay element not found!');
+            // Ensure search input functionality (now part of header)
+            if (searchInput) {
+                searchInput.style.setProperty('pointer-events', 'auto', 'important');
+                searchInput.disabled = false;
+                console.log('✅ Search input functionality restored');
             }
             
             // Restore map legend
